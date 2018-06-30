@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        <%= title %>
+    </title>
+    <link href="/stylesheets/bootstrap/3.3.6/bootstrap.css" rel="stylesheet">
+    <link href="/stylesheets/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/images/icon.png" >
+
+    <style>
+        body {
+            font-family: "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+            font-size: 20px;
+            color: #fff;
+            /* background: linear-gradient(to left, #50a3a2 0%, #53e3a6 100%); */
+            background-image:url("images/blue.jpg");
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html,body{
+            height: 100%;
+        }
+		#app{
+            width: 460px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+        .tab{
+            width: 460px;
+            height: 49px;
+            line-height: 49px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            border-bottom: 2px solid #fff;
+        }
+        .tab label{
+            margin-bottom:10px;
+            width: 100%;
+            float: left;
+            display: block;
+            font-size: 40px;
+            white-space: nowrap;
+            cursor: pointer;
+            color: #333333;
+        }
+        .tab .white{
+            color: #fff;
+        }
+        .tab .line{
+            margin-top:20px;
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: #55b024;
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            transition: all .3s;
+        }
+        .tab s{
+            display: block;
+            width: 0px;
+            height: 0px;
+            /* border-top: 10px solid #55b024;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 10px solid transparent; */
+            position: absolute;
+            top: 0;
+            left: 50%;
+            /* transform: translateX(-50%); */
+        }
+        .tab label input{
+            z-index: 999;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            opacity: 0;
+            display: block;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+        }
+		.formRow{
+            margin-bottom: 20px;
+        }
+        .formRow input{
+            width: 366px;
+            height: 45px;
+            line-height: 45px;
+            font-size: 16px;
+            border: 1px #fff solid;
+            padding: 0 9px;
+            background: none;
+            border-radius: 6px;
+            color: #fff;
+        }
+		.formActions input{
+            padding: 10px 100px;
+            background: none;
+            border: 1px solid #fff;
+            font-size: 24px;
+            color: #FFFFFF;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all .5s;
+        }
+        .formActions input:hover{
+            background: #55b024;
+        }
+    </style>
+</head>
+
+<body>
+     
+    <div id="app">
+        <div class="tab">
+            <label class="white">
+                <input type="radio" name="type"/>
+                <%= title %>
+            </label>
+            <span class="line"><s></s></span>
+        </div>
+        <div class="login">
+            <form method="post" action="/home">
+                <div class="formRow">
+                    账号：
+                    <input type="text" id="userid" name="userid" placeholder="账号">
+                </div>
+                <div class="formRow">
+                    密码：
+                    <input type="password" id="password" name="password" placeholder="密码">
+                </div>
+                 
+                <div class="formActions">
+                    <input type="submit" value="登 录">
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- <script src="./js/index.js"></script> -->
+    <script src="/javascripts/jquery/2.0.0/jquery.min.js"></script>
+    <script src="/javascripts/bootstrap/3.3.6/bootstrap.js"></script>
+    <script>
+        $(function () {
+            $('#login').click(function () {
+                var userid = $("#userid").val();
+                var password = $("password").val();
+                var data = {"userid":userid, "password":password};
+                $.ajax({
+                    url: '/login',
+                    type: 'post',
+                    data: data,
+                    success: function (data, status) {
+                        if (status == 'success') {
+                            location.href = '/home';
+                        }
+                    },
+                    error: function (data, status) {
+                        if (status == 'error') {
+                            alert("用户名或密码错误,请重新输入!");
+                            location.href = '/login';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

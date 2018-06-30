@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        <%= title %>
+    </title>
+    <link href="/stylesheets/bootstrap/3.3.6/bootstrap.css" rel="stylesheet">
+    <link href="/stylesheets/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="/stylesheets/vue-datepicker/dist/vue-datepicker-local.css" rel="stylesheet">
+    <link href="/stylesheets/style.css" rel="stylesheet">
+    <link href="/stylesheets/app.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/images/icon.png">
+</head>
+
+<body>
+    <div id="app" bloak>
+        <nav class="navbar navbar-default">
+            <div class="navbar-header">
+                <div class="pull-left">
+                    <img class="user-pic" src="/images/user.jpg">
+                    <span class="textStyle">
+                        <%= user %>,欢迎登陆
+                    </span> 
+                </div>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+                    <span class="sr-only">汉堡按钮</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="navbar-right">
+                <div class="collapse navbar-collapse" id="navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a class="fa fa-sun-o fa-2x" href="#" @click="tab1(showMyDay)">My Days</a>
+                        </li>
+                        <li>
+                            <a class="fa fa-clock-o fa-2x" href="#" @click="tab2(showToDo)">To Do</a>
+                        </li>
+                        <li>
+                            <a class="fa fa-plus-circle fa-2x" href="#" @click="tab4(showOther)">Other Operation</a>
+                        </li>
+                        <li>
+                            <a class="fa fa-sign-out fa-2x" href="./index">Home</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="main">
+            <div v-show="showMyDay" class="showtable">
+                <h3 class="big-title">所有任务:</h3>
+                <button class="btn btn-group" @click="tab3(showSearch)">搜索</button>
+                <button class="btn btn-group" @click="sortupPrior">按优先级升序排序</button>
+                <button class="btn btn-group" @click="sortdownPrior">按优先级降序排序</button>
+                <span class="no-task-tip" v-show="!myTask.length">还没有添加任何任务</span>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <td>任务名称</td>
+                            <td>完成时间</td>
+                            <td>优先级</td>
+                            <td>是否完成</td>
+                            <td>操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="task,index in myTask">
+                            <tr v-if="index >= (curPage - 1) * pageSize && index < curPage * pageSize">
+                                <td>
+                                    <input class="form-control" type="text" v-model="task.title">
+                                </td>
+                                <td>
+                                    <input class="form-control" type="text" v-model="task.createdAt">
+                                </td>
+                                <td>
+                                    <input class="form-control" type="text" v-model="task.prior">
+                                </td>
+                                <td>
+                                    <input class="form-control" type="text" v-model="task.isChecked">
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary" type="button" @click="deletemyTask(task)">删除</button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <nav style="float:right;">
+                    <ul class="pagination pagination-lg">
+                        <li v-if="curPage === 1" class="disabled">
+                            <a href="javascript:void(0)">上一页</a>
+                        </li>
+                        <li v-else @click="prePage()">
+                            <a href="javascript:void(0)">上一页</a>
+                        </li>
+                        <template>
+                            <li v-for="page in pageCount" v-if="curPage === page" class="active" @click="numPage(page)">
+                                <a href="javascript:void(0)">{{ page }}</a>
+                            </li>
+                            <li v-else @click="numPage(page)">
+                                <a href="javascript:void(0)>">{{ page }}</a>
+                            </li>
+                        </template>
+                        <li v-if="curPage === pageCount" class="disabled">
+                            <a href="javascript:void(0)">下一页</a>
+                        </li>
+                        <li v-else @click="nextPage()">
+                            <a href="javascript:void(0)">下一页</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div v-show="showToDo" class="col-lg-6 col-md-6 col-sm-6">
+                <h3 class="big-title">添加清单：</h3>
+                <input placeholder="在此添加清单" class="form-control form" type="text" v-model="textlist" @keyup.enter="addmyList()">
+                <div class="list-group text-left form-group" style="margin-top: 2em;">
+                    <a href="#" class="list-group-item active text-left" v-show="!myList.length">
+                        还没有添加任何清单
+                    </a>
+                    <ul class="todo-list">
+                        <li class="todolist" v-for="list in myList" :class="{editing:list === editList}" @click="setList(list.id)">
+                            <div class="view">
+                                <div class="word">
+                                    <label @dblclick="editmyList(list)">{{list.label}}</label>
+                                </div>
+                                <button class="btn btn-success" type="text" @click="deletemyList(list)">删除</button>
+                            </div>
+                            <input v-focus="editList === list" class="edit" type="text" v-model="list.label" @blur="editedList" @keyup.enter="editedList"
+                                @keyup.esc="cancelList(list)" />
+                        </li>
+                    </ul>
+
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">提醒：</div>
+                    <div class="panel-body">
+                        请尽快完成这些计划！
+                    </div>
+                    <div class="panel-footer text-right">
+                        <button class="btn btn-info btn-sm" @click="clear()">清空所有任务计划</button>
+                    </div>
+                </div>
+            </div>
+            <div v-show="showToDo" class="col-lg-6 col-md-6 col-sm-6">
+                <h3 class="big-title">添加任务：</h3>
+                <span class="inputTitle">任务名称：</span><input placeholder="点击某个清单后添加" class="form-control" type="text"
+                     v-model="thing" style="width:195px;"/>
+                <div>
+                <span class="inputTitle">任务时间：</span><br/>
+                <vue-datepicker-local v-model="time"></vue-datepicker-local>
+                </div>
+                <span class="inputTitle">任务优先级：</span><input placeholder="添加任务优先级后回车" class="form-control"
+                     type="text" v-model="priority" @keyup.enter="addmyTask" style="width:195px;"/>
+                <ul class="task-count" v-show="myTask.length">
+                    <li class="action">
+                        <a v-for="list in myList" v-show="list.id === list_index" class="btn badge listname">{{ list.label }}</a>
+                        <a :class="{active: visibility == 'unfinished'}" href="#unfinished">未完成任务</a>
+                        <a :class="{active: visibility == 'finished'}" href="#finished">完成任务</a>
+                    </li>
+                </ul>
+                <div class="tasks">
+                    <span class="no-task-tip" v-show="!myTask.length">还没有添加任何任务</span>
+                    <ul class="todo-task">
+                        <li class="todotask" v-for="task in filteredTask" :class="{completed: task.isChecked,editing:task === editTask}" v-show="task.tid === list_index">
+                            <div class="view">
+                                <div class="word">
+                                    <input class="toggle" type="checkbox" v-model="task.isChecked">
+                                    <label @dblclick="editmyTask(task)">{{task.title}}</label>
+                                </div>
+                                <button class="destroy" type="text" @click="deletemyTask(task)">×</button>
+                            </div>
+                            <input v-focus="editTask === task" class="edit" type="text" v-model="task.title" @blur="editedTask" @keyup.enter="editedTask"
+                                @keyup.esc="cancelTask(task)" />
+                            <div class="task-sort">
+                                <label class="task-extra">Time: {{task.createdAt}}</label>
+                                <label class="task-extra">Priority: {{task.prior}}</label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div v-show="showSearch" class="showtable">
+                <input placeholder="请输入要查询的信息" v-model="searchData" class="searchInfo form-control form" type="text">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <td>任务名称</td>
+                            <td>完成时间</td>
+                            <td>优先级</td>
+                            <td>是否完成</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(task,index) in Newitems" :key="index">
+                            <td>
+                                <input class="form-control" type="text" v-model="task.title">
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" v-model="task.createdAt">
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" v-model="task.prior">
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" v-model="task.isChecked">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div v-show="showOther">
+                <h1>待开发...........</h1>
+            </div>
+        </div>
+    </div>
+    <script src="/javascripts/vue/vue.js"></script>
+    <script src="/javascripts/jquery/2.0.0/jquery.min.js"></script>
+    <script src="/javascripts/bootstrap/3.3.6/bootstrap.js"></script>
+    <script src="/javascripts/layDate/laydate.js"></script>
+    <script src="/javascripts/vue-datepicker/dist/vue-datepicker-local.js"></script>
+    <script src="/controllers/event.js"></script>
+     
+
+
+</body>
+
+</html>
